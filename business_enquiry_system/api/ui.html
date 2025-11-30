@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Support Agent</title>
+  <style>
+    :root { --bg:#0b132b; --panel:#1c2541; --accent:#5bc0be; --text:#eaeaea; --muted:#9aa4b2; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); color: var(--text); }
+    header { padding: 16px 20px; background: var(--panel); border-bottom: 1px solid #2b3455; display:flex; align-items:center; justify-content:space-between; }
+    header h1 { margin: 0; font-size: 18px; letter-spacing: .5px; }
+    .container { display:flex; gap:16px; padding:16px; height: calc(100vh - 64px); }
+    .sidebar { width: 300px; background: var(--panel); border:1px solid #2b3455; border-radius: 8px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+    .sidebar h3 { margin:6px 0; font-size:14px; color: var(--muted); }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { font-size: 12px; color: var(--muted); }
+    .field input, .field textarea { background:#101935; color:var(--text); border:1px solid #2b3455; border-radius:6px; padding:10px; }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .btn { background: var(--accent); color:#062925; border:none; padding:10px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
+    .btn.secondary { background:#2b3455; color: var(--text); }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .content { flex:1; display:flex; flex-direction:column; gap:10px; }
+    .messages { flex:1; background: var(--panel); border:1px solid #2b3455; border-radius: 8px; padding: 12px; overflow:auto; }
+    .msg { margin: 8px 0; padding:10px 12px; border-radius:8px; white-space: pre-wrap; line-height:1.4; }
+    .msg.user { background:#17314f; border:1px solid #2b3455; }
+    .msg.bot { background:#102a43; border:1px solid #2b3455; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .kb { background:#102a43; border:1px dashed #415a77; padding:8px; border-radius:6px; margin-top:6px; white-space: pre-wrap; }
+    .banner { background:#3a506b; border-left:4px solid var(--accent); padding:8px 10px; border-radius:6px; margin-top:8px; }
+    .row { display:flex; gap:8px; align-items:center; }
+    .row input { flex:1; }
+    a { color: #7fdad8; }
+  </style>
+  <script>
+    async function sendMessage() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const msg = document.getElementById('message').value.trim();
+      if (!msg || !phone) { alert('Please enter a message and phone number'); return; }
+
+      addMessage('You', msg, 'user');
+      setSending(true);
+      try {
+        const res = await fetch('/process', {
+          method: 'POST', headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({ message: msg, phone, name })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Request failed');
+        let text = data.final_response || '';
+        let meta = `Status: ${data.status.toUpperCase()} · Enquiry: ${data.enquiry_id}`;
+        addMessage('Agent', text, 'bot', meta);
+        if (data.escalation_summary) {
+          addBanner('Escalation suggested. See summary below.');
+          addKB('--- Escalation Summary ---\n' + (data.escalation_summary.summary_text || ''));
+        }
+      } catch (e) {
+        addMessage('Agent', 'Sorry, something went wrong. ' + e.message, 'bot');
+      } finally { setSending(false); }
+    }
+
+    async function reloadKB() {
+      try {
+        const res = await fetch('/kb/reload', { method: 'POST' });
+        const data = await res.json();
+        addKB(`KB reloaded: ${data.documents} docs · ${data.terms} terms\nPath: ${data.kb_path}`);
+      } catch (e) {
+        addKB('KB reload failed: ' + e.message);
+      }
+    }
+
+    async function searchKB() {
+      const q = document.getElementById('kbq').value.trim();
+      const dom = document.getElementById('kbdomain').value.trim();
+      if (!q) { alert('Enter a search term'); return; }
+      const url = '/kb/search?q=' + encodeURIComponent(q) + (dom ? ('&domain=' + encodeURIComponent(dom)) : '');
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!Array.isArray(data)) { throw new Error('Invalid response'); }
+        const lines = data.map(r => `• [${r.category}] ${r.title}`).join('\n');
+        addKB('KB Search Results:\n' + (lines || 'No results'));
+      } catch (e) {
+        addKB('KB search failed: ' + e.message);
+      }
+    }
+
+    function addMessage(author, text, css, meta) {
+      const wrap = document.getElementById('messages');
+      const el = document.createElement('div');
+      el.className = 'msg ' + (css || '');
+      el.innerHTML = `<strong>${author}</strong><div>${escapeHtml(text)}</div>` + (meta ? `<div class='meta'>${meta}</div>` : '');
+      wrap.appendChild(el); wrap.scrollTop = wrap.scrollHeight;
+    }
+    function addKB(text) {
+      const wrap = document.getElementById('messages');
+      const el = document.createElement('div');
+      el.className = 'kb';
+      el.textContent = text;
+      wrap.appendChild(el); wrap.scrollTop = wrap.scrollHeight;
+    }
+    function addBanner(text) {
+      const wrap = document.getElementById('messages');
+      const el = document.createElement('div');
+      el.className = 'banner';
+      el.textContent = text;
+      wrap.appendChild(el); wrap.scrollTop = wrap.scrollHeight;
+    }
+    function clearChat() {
+      document.getElementById('messages').innerHTML = '';
+    }
+    function setSending(on) {
+      const b = document.getElementById('sendBtn');
+      b.disabled = on; b.textContent = on ? 'Sending…' : 'Send';
+    }
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Customer Support Agent</h1>
+    <div class="actions">
+      <button class="btn secondary" onclick="reloadKB()">Reload KB</button>
+      <a href="/docs" class="btn secondary" style="text-decoration:none;">API Docs</a>
+    </div>
+  </header>
+  <div class="container">
+    <aside class="sidebar">
+      <h3>Customer</h3>
+      <div class="field"><label for="name">Name</label><input id="name" placeholder="Optional" /></div>
+      <div class="field"><label for="phone">Phone</label><input id="phone" placeholder="+2348012345678" /></div>
+      <h3>Ask</h3>
+      <div class="field"><label for="message">Message</label><textarea id="message" placeholder="e.g., I need 1000 naira MTN airtime for 08012345678"></textarea></div>
+      <div class="actions">
+        <button id="sendBtn" class="btn" onclick="sendMessage()">Send</button>
+        <button class="btn secondary" onclick="clearChat()">Clear</button>
+      </div>
+      <h3>KB Search</h3>
+      <div class="row">
+        <input id="kbq" placeholder="Search terms" />
+        <input id="kbdomain" placeholder="Domain (AIRTIME/POWER/DATA)" />
+      </div>
+      <div class="actions" style="margin-top:8px;">
+        <button class="btn secondary" onclick="searchKB()">Search KB</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div id="messages" class="messages"></div>
+    </main>
+  </div>
+</body>
+</html>
+

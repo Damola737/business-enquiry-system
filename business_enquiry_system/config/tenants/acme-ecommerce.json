@@ -1,0 +1,93 @@
+{
+  "tenant_key": "acme-ecommerce",
+  "company_name": "Acme Online Store",
+  "domains": [
+    {
+      "name": "PRODUCT_INQUIRY",
+      "description": "Questions about products, features, availability, and recommendations"
+    },
+    {
+      "name": "ORDER_SUPPORT",
+      "description": "Order status, delivery issues, returns and cancellations"
+    },
+    {
+      "name": "PAYMENTS_BILLING",
+      "description": "Payment failures, refunds, billing questions"
+    },
+    {
+      "name": "OTHER",
+      "description": "All other enquiries not covered above"
+    }
+  ],
+  "intents": [
+    { "name": "product_question", "description": "Customer is asking about a product" },
+    { "name": "place_order", "description": "Customer wants to place a new order" },
+    { "name": "track_order", "description": "Customer wants to track an existing order" },
+    { "name": "change_cancel_order", "description": "Customer wants to change or cancel an order" },
+    { "name": "refund_or_return", "description": "Customer wants a refund or return" },
+    { "name": "billing_issue", "description": "Customer reports billing/charge problems" },
+    { "name": "general_inquiry", "description": "General questions not tied to a specific order" }
+  ],
+  "entities": {
+    "order_id": {
+      "description": "E-commerce order identifier",
+      "examples": ["ORD-123456", "A1B2C3D4"]
+    },
+    "product_name": {
+      "description": "Name or description of the product",
+      "examples": ["wireless headphones", "laptop bag"]
+    },
+    "payment_method": {
+      "description": "Payment method used by the customer",
+      "examples": ["card", "paypal", "bank transfer"]
+    }
+  },
+  "branding": {
+    "tone": "friendly_concise",
+    "greeting": "Hi! I can help with your orders, deliveries, and product questions.",
+    "closing": "Thanks for shopping with us!"
+  },
+  "fallback_patterns": {
+    "domains": {
+      "PRODUCT_INQUIRY": [
+        "product",
+        "item",
+        "size",
+        "color",
+        "stock",
+        "available",
+        "availability",
+        "specification",
+        "specs",
+        "recommend",
+        "recommendation"
+      ],
+      "ORDER_SUPPORT": [
+        "order",
+        "tracking",
+        "shipped",
+        "delivery",
+        "delivered",
+        "late",
+        "delay",
+        "return",
+        "cancel",
+        "exchange",
+        "shipping"
+      ],
+      "PAYMENTS_BILLING": [
+        "payment",
+        "paid",
+        "card",
+        "charged",
+        "refund",
+        "billing",
+        "invoice",
+        "receipt",
+        "failed payment",
+        "declined"
+      ]
+    }
+  }
+}
+

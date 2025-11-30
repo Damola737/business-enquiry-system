@@ -1,0 +1,90 @@
+{
+  "tenant_key": "medicor-health",
+  "company_name": "Medicor Health Clinic",
+  "domains": [
+    {
+      "name": "APPOINTMENTS",
+      "description": "Appointment booking, rescheduling, and cancellations"
+    },
+    {
+      "name": "SYMPTOMS_TRIAGE",
+      "description": "Non-emergency symptoms and triage questions"
+    },
+    {
+      "name": "BILLING_INSURANCE",
+      "description": "Billing, insurance coverage, and payment questions"
+    },
+    {
+      "name": "OTHER",
+      "description": "Other administrative enquiries"
+    }
+  ],
+  "intents": [
+    { "name": "book_appointment", "description": "Patient wants to book an appointment" },
+    { "name": "reschedule_appointment", "description": "Patient wants to change an appointment" },
+    { "name": "cancel_appointment", "description": "Patient wants to cancel an appointment" },
+    { "name": "symptom_question", "description": "Patient describes symptoms and asks for guidance" },
+    { "name": "billing_question", "description": "Patient asks about bills, coverage, or payments" },
+    { "name": "general_info", "description": "Requests for clinic hours, location, etc." }
+  ],
+  "entities": {
+    "patient_id": {
+      "description": "Internal patient identifier or medical record number",
+      "examples": ["MRN123456", "P-98765"]
+    },
+    "appointment_date": {
+      "description": "Date for an appointment",
+      "examples": ["tomorrow", "next Monday", "2025-12-01"]
+    },
+    "department": {
+      "description": "Clinic department or specialty",
+      "examples": ["cardiology", "dermatology", "pediatrics"]
+    }
+  },
+  "branding": {
+    "tone": "calm_professional",
+    "greeting": "Welcome to Medicor Health. How can we assist you today?",
+    "closing": "Thank you for contacting Medicor Health."
+  },
+  "fallback_patterns": {
+    "domains": {
+      "APPOINTMENTS": [
+        "appointment",
+        "book",
+        "booking",
+        "schedule",
+        "reschedule",
+        "cancel",
+        "time",
+        "date",
+        "slot"
+      ],
+      "SYMPTOMS_TRIAGE": [
+        "symptom",
+        "pain",
+        "fever",
+        "cough",
+        "headache",
+        "dizzy",
+        "nausea",
+        "bleeding",
+        "rash",
+        "I feel",
+        "I am feeling"
+      ],
+      "BILLING_INSURANCE": [
+        "bill",
+        "billing",
+        "invoice",
+        "charge",
+        "payment",
+        "copay",
+        "insurance",
+        "covered",
+        "coverage",
+        "claim"
+      ]
+    }
+  }
+}
+

@@ -1,0 +1,8 @@
+pyautogen>=0.2.27,<0.3
+pyautogen[retrievechat]>=0.2.27,<0.3
+chromadb>=0.4.24
+pypdf>=4.2.0
+unstructured>=0.15.0
+python-dotenv>=1.0.1
+pydantic>=2.8.2
+tenacity>=8.4.2

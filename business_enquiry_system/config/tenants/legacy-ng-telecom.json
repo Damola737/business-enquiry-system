@@ -1,0 +1,112 @@
+{
+  "tenant_key": "legacy-ng-telecom",
+  "company_name": "Legacy Nigerian Telecom Demo",
+  "domains": [
+    {
+      "name": "AIRTIME",
+      "description": "Mobile phone credit/top-ups for Nigerian networks"
+    },
+    {
+      "name": "POWER",
+      "description": "Electricity token purchases and billing enquiries for DISCOs"
+    },
+    {
+      "name": "DATA",
+      "description": "Internet data bundles and connectivity issues"
+    },
+    {
+      "name": "MULTI",
+      "description": "Requests involving multiple services (airtime, power, data)"
+    },
+    {
+      "name": "OTHER",
+      "description": "Requests that do not fit a known service domain"
+    }
+  ],
+  "intents": [
+    { "name": "purchase_airtime", "description": "Customer wants to buy airtime" },
+    { "name": "purchase_power", "description": "Customer wants to buy an electricity token" },
+    { "name": "purchase_data", "description": "Customer wants to buy a data bundle" },
+    { "name": "inquiry", "description": "Customer is asking for information or pricing" },
+    { "name": "technical_issue", "description": "Customer reports service not working or failures" },
+    { "name": "billing_issue", "description": "Customer reports billing/charge problems" },
+    { "name": "complaint", "description": "Customer is unhappy and complaining" },
+    { "name": "status_check", "description": "Customer is checking balance or transaction status" }
+  ],
+  "entities": {
+    "phone_number": {
+      "description": "Nigerian phone number of the customer or recipient",
+      "examples": ["08012345678", "+2348012345678"]
+    },
+    "meter_number": {
+      "description": "Electricity meter number (11–13 digits)",
+      "examples": ["12345678901"]
+    },
+    "amount": {
+      "description": "Naira amount for the transaction",
+      "examples": ["1000", "5000"]
+    },
+    "network": {
+      "description": "Mobile network provider",
+      "examples": ["MTN", "Airtel", "Glo", "9Mobile"]
+    },
+    "disco": {
+      "description": "Electricity distribution company",
+      "examples": ["EKEDC", "IKEDC", "AEDC"]
+    }
+  },
+  "branding": {
+    "tone": "professional_friendly",
+    "greeting": "Welcome! I can help with airtime, power tokens, and data bundles.",
+    "closing": "Thank you for using our service."
+  },
+  "fallback_patterns": {
+    "domains": {
+      "AIRTIME": [
+        "airtime",
+        "recharge",
+        "credit",
+        "top up",
+        "vend",
+        "mtn",
+        "airtel",
+        "glo",
+        "9mobile",
+        "etisalat",
+        "080",
+        "081",
+        "090",
+        "091",
+        "070"
+      ],
+      "POWER": [
+        "electricity",
+        "power",
+        "light",
+        "nepa",
+        "phcn",
+        "token",
+        "meter",
+        "bill",
+        "units",
+        "kwh",
+        "ekedc",
+        "ikedc",
+        "aedc",
+        "phedc",
+        "ibedc",
+        "disco"
+      ],
+      "DATA": [
+        "data",
+        " mb",
+        " gb",
+        "internet",
+        "browsing",
+        "bundle",
+        "hotspot",
+        "wifi"
+      ]
+    }
+  }
+}

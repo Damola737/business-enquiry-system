@@ -1,0 +1,73 @@
+# UI Dependencies for Multi-Service Customer Service System
+# Install with: pip install -r requirements_ui.txt
+
+# ============================================================
+# CORE AI & FRAMEWORK (from requirements_enhanced.txt)
+# ============================================================
+
+# AutoGen Framework
+pyautogen>=0.2.27,<0.3
+pyautogen[retrievechat]>=0.2.27,<0.3
+
+# LLM & AI
+openai>=1.12.0
+
+# Vector Database & RAG
+chromadb>=0.4.24
+sentence-transformers>=2.5.1
+tiktoken>=0.6.0
+
+# Data Validation
+pydantic>=2.8.2
+pydantic-settings>=2.2.0
+
+# Utilities
+python-dotenv>=1.0.1
+tenacity>=8.4.2
+requests>=2.31.0
+
+# ============================================================
+# USER INTERFACE DEPENDENCIES
+# ============================================================
+
+# Enhanced CLI with Colors
+colorama>=0.4.6
+
+# Gradio Web UI (Modern, Easy Deployment)
+gradio>=4.0.0
+
+# Streamlit UI (Dashboard Style)
+streamlit>=1.28.0
+
+# Additional UI Utilities
+Pillow>=10.0.0  # Image handling for UI
+plotly>=5.17.0  # Charts and visualizations (optional)
+
+# ============================================================
+# OPTIONAL: PRODUCTION UI ENHANCEMENTS
+# ============================================================
+
+# For better performance
+uvicorn[standard]>=0.24.0  # If using FastAPI alongside
+
+# For deployment
+gunicorn>=21.2.0  # Production WSGI server
+
+# For monitoring
+prometheus-client>=0.19.0
+
+# ============================================================
+# DEVELOPMENT & TESTING (Optional)
+# ============================================================
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+
+# Code Quality
+black>=24.0.0
+flake8>=7.0.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.4.0

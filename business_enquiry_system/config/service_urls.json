@@ -1,0 +1,27 @@
+{
+  "airtime": {
+    "MTN": "https://portal.example.com/airtime/mtn",
+    "AIRTEL": "https://portal.example.com/airtime/airtel",
+    "GLO": "https://portal.example.com/airtime/glo",
+    "9MOBILE": "https://portal.example.com/airtime/9mobile"
+  },
+  "data": {
+    "MTN": "https://portal.example.com/data/mtn",
+    "AIRTEL": "https://portal.example.com/data/airtel",
+    "GLO": "https://portal.example.com/data/glo",
+    "9MOBILE": "https://portal.example.com/data/9mobile"
+  },
+  "power": {
+    "EKEDC": "https://portal.example.com/power/ekedc",
+    "IKEDC": "https://portal.example.com/power/ikedc",
+    "AEDC": "https://portal.example.com/power/aedc",
+    "PHEDC": "https://portal.example.com/power/phedc",
+    "IBEDC": "https://portal.example.com/power/ibedc"
+  },
+  "support": {
+    "airtime_faq": "https://help.example.com/airtime",
+    "power_faq": "https://help.example.com/power",
+    "data_faq": "https://help.example.com/data",
+    "contact": "https://help.example.com/contact"
+  }
+}

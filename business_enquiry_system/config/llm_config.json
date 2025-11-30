@@ -1,0 +1,13 @@
+{
+  "llm_config": {
+    "config_list": [
+      { "model": "gpt-4o-mini", "api_key": "${OPENAI_API_KEY}" }
+    ],
+    "temperature": 0.2,
+    "timeout": 60
+  },
+  "group_chat_config": {
+    "max_round": 20,
+    "speaker_selection_method": "auto"
+  }
+}

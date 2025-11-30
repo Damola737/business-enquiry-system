@@ -1,0 +1,164 @@
+﻿# TechCorp Nigeria — Getting Started & Help Center
+
+Welcome to **TechCorp Nigeria** — business tools tailored for teams operating in Nigeria. This guide covers setup, pricing in NGN, local payments, common troubleshooting, and support in **WAT (Africa/Lagos)**.
+
+---
+
+## 1) Create Your Workspace
+1. **Sign up:** https://app.techcorp.ng/signup  
+2. **Verify contact:** Confirm **email** and **phone** (for password resets, OTPs, and payment alerts).  
+3. **Workspace name:** Use your registered **business name** for tax invoices.  
+4. **Company details (recommended):**
+   - CAC Registration Number (RC/BN)
+   - Registered address (Lagos, Abuja, PH, Kano, etc.)
+   - Billing email (e.g., **accounts@yourcompany.ng**)
+
+---
+
+## 2) Plans & Pricing (in NGN)
+- **Basic** — **₦15,000 / month**  
+  For small teams starting with analytics & collaboration.  
+  Limits: up to **10 users**, **5 GB** storage, **API 1,000 calls/day**.
+
+- **Professional** — **₦45,000 / month**  
+  Growing teams that need reporting, dashboards & priority support.  
+  Limits: up to **50 users**, **100 GB** storage, **API 10,000 calls/day**.
+
+- **Enterprise** — **Custom (annual)**  
+  Unlimited users, **24/7** dedicated support, custom security, SLAs, SSO.
+
+**Annual discount:** **20%** on Basic & Professional.  
+**VAT:** Prices **exclude** Nigeria VAT (7.5%) where applicable.
+
+> Need a quote or pro-forma invoice? Email **sales@techcorp.ng** with team size and preferred plan.
+
+---
+
+## 3) Payments (Nigeria)
+Pay in **Naira (₦)** via:
+- **Cards / Bank / USSD** using **Paystack** or **Flutterwave**  
+- **Direct bank transfer** (invoice includes bank details)  
+- **Standing order** for annual/quarterly billing (on request)
+
+**Billing cycle:** Monthly by default. **Annual prepay = 20% off**.  
+**Receipts & Invoices:** Auto-emailed to your billing address after payment.
+
+**Update card / payment method:** *Settings ▸ Billing ▸ Payment Methods*  
+**Bank transfer note:** Include the **Invoice #** as transfer narration.
+
+---
+
+## 4) Onboarding Checklist
+1. Invite your team → *Settings ▸ Team* (roles: **Admin**, **Analyst**, **Viewer**).  
+2. Connect data sources → *Settings ▸ Integrations* (finance, CRM, web analytics).  
+3. Set **currency & timezone** → *Settings ▸ Regional* = **NGN, WAT**.  
+4. Enable payments → Connect **Paystack**/**Flutterwave** for in-app purchases.  
+5. Build dashboards → Use **Nigeria Business Starter** templates.  
+6. Alerts → Email/Slack alerts for KPIs (revenue, collections, churn).  
+
+---
+
+## 5) Support & SLAs
+- **Hours:** Mon–Fri, **09:00–18:00 WAT** (Africa/Lagos)  
+- **Channels:** **support@techcorp.ng** • **+234-01-XXX-XXXX**  
+- **Priority:** Professional (priority) • **Enterprise (24/7 with SLA)**  
+- **Status page:** https://status.techcorp.ng (subscribe for incident alerts)
+
+**Escalation (Enterprise):** include *workspace ID*, *impact*, *timestamps*, and *screenshots/logs*.
+
+---
+
+## 6) Security, Privacy & Compliance
+- Designed for **NDPR/NDPA** alignment; enterprise DPAs available  
+- **RBAC**, audit logs, strong password policy, **2FA**  
+- **SSO/SAML** (Enterprise), IP allow-listing (on request)  
+- Export your data (CSV/JSON) via *Settings ▸ Data Export*  
+- Data deletion & account closure: request via **security@techcorp.ng**
+
+---
+
+## 7) API Overview (Quick)
+- **Auth:** Bearer token  
+- **Base URL:** `https://api.techcorp.ng/v1`  
+- **Rate limits:** Basic **1,000/day** • Professional **10,000/day** • Enterprise **custom**  
+- **Common errors:**  
+  - **401** invalid/expired token → refresh token, confirm scopes  
+  - **429** rate limit → implement exponential backoff; respect `Retry-After`  
+
+
+Developer docs: https://developers.techcorp.ng
+
+---
+
+## 8) Troubleshooting (Most Common Issues)
+
+### A) Login & Access
+- **Forgot password / 2FA:** Use *Forgot Password*; check spam for OTPs.  
+- **SSO enabled but failing:** Confirm IdP cert/ACS URL; contact IT/admin.  
+- **Account locked:** 3 failed attempts → 10-minute lock; admin can unlock in *Settings ▸ Team.*
+
+### B) Billing & Invoices
+- **Charged twice:** Share **last 4 digits**, **date/time**, **amount**, and **invoice #** → **billing@techcorp.ng**; we verify and **refund** duplicates.  
+- **Need invoice copy:** *Settings ▸ Billing ▸ Invoices* (download PDF).  
+- **Switch monthly ⇄ annual:** *Settings ▸ Billing ▸ Plan* (annual saves 20%).  
+- **Change card / add method:** *Settings ▸ Billing ▸ Payment Methods*.
+
+### C) Payments (Paystack/Flutterwave)
+- **Card declined:** Try another card, check 3-D Secure, verify funds.  
+- **USSD/bank transfer pending:** Allow **up to 24 hours**; send proof if urgent.  
+- **VAT on invoices:** Enabled automatically for NG entities; ensure business details in *Settings ▸ Billing.*
+
+### D) API & Integrations
+- **429 “Too Many Requests”:** Backoff + batch requests + caching; consider plan upgrade.  
+- **401 “Unauthorized”:** Regenerate token, check scopes/expiry.  
+- **Webhooks not arriving:** Verify endpoint URL, SSL cert, firewall; check logs in *Settings ▸ Integrations ▸ Webhooks.*
+
+### E) Dashboards & Data
+- **No data showing:** Confirm integration auth, source permissions, and date filters.  
+- **Timezone/currency off:** *Settings ▸ Regional* → **WAT/NGN**.  
+- **Slow charts:** Reduce date ranges, pre-aggregate, or use cached views (Pro+).
+
+### F) Email Deliverability
+- **OTP/Invoice in spam:** Add **@techcorp.ng** to allow-list; set SPF/DKIM at your domain if using SSO/user-provisioning emails.
+
+---
+
+## 9) Self-Service: What to Send Support (Template)
+
+**Subject:** _[Issue]_ – Workspace **{your-workspace}** – Impact **{high/med/low}**  
+**Details:**  
+- When it started: **{date/time WAT}**  
+- Affected pages/API: **{URL/endpoint}**  
+- Steps to reproduce: **{1,2,3}**  
+- Error message/HTTP code: **{…}**  
+- Screenshots/logs: **{attach}**  
+- Business impact: **{e.g., dashboards down for sales team}**
+
+Send to **support@techcorp.ng** (Enterprise can CC **escalations@techcorp.ng**).
+
+---
+
+## 10) FAQ (Nigeria)
+**Can I pay by bank transfer and still get receipts?**  
+Yes. Choose **Invoice** at checkout; receipts email automatically once payment clears.
+
+**Can you issue VAT invoices?**  
+Yes. Add registered business details (and TIN if applicable) in *Settings ▸ Billing*.
+
+**Do you support multiple locations (e.g., Lagos + Abuja)?**  
+Yes. Create **locations**, assign users, filter dashboards by location.
+
+**How do I cancel/downgrade?**  
+*Settings ▸ Billing ▸ Plan*. Cancellation stops renewals at period end; data export available from *Settings ▸ Data Export*.
+
+**We keep hitting 429.**  
+Batch requests, add exponential backoff with jitter, or upgrade to higher tier.
+
+---
+
+### Next Steps
+1) Create your workspace → https://app.techcorp.ng/signup  
+2) Invite your team and set roles  
+3) Pick a plan in NGN, connect Paystack/Flutterwave  
+4) Build your first dashboard in under 10 minutes 🚀
+
