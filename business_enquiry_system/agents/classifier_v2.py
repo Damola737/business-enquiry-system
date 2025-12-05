@@ -24,6 +24,7 @@ except Exception:
         return default
 from agents.base_agent_v2 import BaseBusinessAgent, ConversationContext
 from config.tenant_config_store import TenantConfigStore
+from context_engine import CaseState, CaseStateStore, ContextPackBuilder, build_tenant_rules_text
 
 
 # ============================================================
@@ -178,8 +179,38 @@ IMPORTANT:
 
         tenant_prompt = self._build_tenant_prompt_section(tenant_cfg)
 
+        # Build context pack (history + tenant rules) when context is available
+        context_pack_block = ""
+        if context is not None:
+            conversation_id = getattr(context, "session_id", context.enquiry_id)
+            tenant_for_state = tenant_id or "legacy-ng-telecom"
+
+            store = CaseStateStore()
+            existing = store.load(tenant_for_state, conversation_id)
+            case_state = existing or CaseState(
+                tenant_id=tenant_for_state,
+                conversation_id=conversation_id,
+                enquiry_id=context.enquiry_id,
+            )
+
+            rules_text = build_tenant_rules_text(tenant_cfg)
+            builder = ContextPackBuilder(max_tokens_per_section=512)
+            pack = builder.build(
+                tenant_rules={"operating_rules": rules_text},
+                conversation=context,
+                case_state=case_state,
+                kb_summaries=None,
+            )
+
+            context_pack_block = (
+                "CONTEXT PACK\n"
+                "-------------\n"
+                f"TENANT OPERATING RULES:\n{pack['tenant_rules']}\n\n"
+                f"CONVERSATION SUMMARY:\n{pack['history_summary']}\n\n"
+            )
+
         # Build prompt (message-specific part)
-        prompt = f"""{tenant_prompt}
+        prompt = f"""{context_pack_block}{tenant_prompt}
 Classify this customer message:
 
 \"{message}\"
@@ -202,6 +233,26 @@ Respond with JSON only (no markdown, no extra text):"""
                 context.intent = classification.intent
                 context.priority = classification.priority
                 context.sentiment = classification.sentiment
+
+                # Persist basic case state snapshot for downstream steps
+                conversation_id = getattr(context, "session_id", context.enquiry_id)
+                tenant_for_state = tenant_id or "legacy-ng-telecom"
+                store = CaseStateStore()
+                state = store.load(tenant_for_state, conversation_id) or CaseState(
+                    tenant_id=tenant_for_state,
+                    conversation_id=conversation_id,
+                    enquiry_id=context.enquiry_id,
+                )
+                state.workflow_step = "classified"
+                state.slots.update(
+                    {
+                        "service_domain": classification.service_domain,
+                        "intent": classification.intent,
+                        "priority": classification.priority,
+                        "sentiment": classification.sentiment,
+                    }
+                )
+                store.save(state)
 
             return {
                 "classification": classification.dict(),

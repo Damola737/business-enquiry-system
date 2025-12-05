@@ -99,6 +99,22 @@ class BaseBusinessAgent:
                 "timestamp": self._metrics["last_used"],
             }
 
+    # --- Optional LLM helper (for agents that need it) ---
+    def get_llm_response(self, prompt: str) -> str:
+        """
+        Best-effort helper to get an LLM reply via the underlying ConversableAgent.
+        Falls back to an empty string on error or when no LLM is configured.
+        """
+        try:
+            generate = getattr(self.agent, "generate_reply", None)
+            if not callable(generate):
+                return ""
+            reply = generate(messages=[{"role": "user", "content": prompt}])
+            return reply if isinstance(reply, str) else str(reply)
+        except Exception as e:
+            self.logger.warning(f"{self.name} LLM call failed: {e}")
+            return ""
+
     # --- To be implemented by subclasses ---
     def _process_specific(self, message: str, context: Dict[str, Any]) -> Any:
         raise NotImplementedError("Subclasses must implement _process_specific()")

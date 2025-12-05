@@ -1,0 +1,160 @@
+[
+  {
+    "id": "airtime_purchase_basic",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "I need 1000 naira MTN airtime for 08012345678"
+    ],
+    "expected_domain": "AIRTIME",
+    "expected_intent": "purchase",
+    "expected_route": "AirtimeSalesAgent",
+    "expected_entities": {
+      "phone": "08012345678",
+      "amount": "1000",
+      "network": "MTN"
+    },
+    "expected_must_include": [],
+    "expected_must_not_include": ["sorry", "cannot"],
+    "expected_escalation": false,
+    "difficulty": "easy",
+    "tags": ["airtime", "purchase", "basic"]
+  },
+  {
+    "id": "data_bundle_inquiry",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "What data bundles do you have for Glo?"
+    ],
+    "expected_domain": "DATA",
+    "expected_intent": "inquiry",
+    "expected_route": "DataSalesAgent",
+    "expected_entities": {
+      "network": "Glo"
+    },
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "expected_escalation": false,
+    "difficulty": "easy",
+    "tags": ["data", "inquiry", "basic"]
+  },
+  {
+    "id": "power_prepaid_purchase",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "I want to buy 5000 naira electricity for meter 12345678901 on IKEDC"
+    ],
+    "expected_domain": "POWER",
+    "expected_intent": "purchase",
+    "expected_route": "PowerSalesAgent",
+    "expected_entities": {
+      "meter_number": "12345678901",
+      "disco": "IKEDC",
+      "amount": "5000"
+    },
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "expected_escalation": false,
+    "difficulty": "easy",
+    "tags": ["power", "purchase", "basic"]
+  },
+  {
+    "id": "escalation_complaint",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "This is the third time my transaction failed! I want to speak to a manager now!"
+    ],
+    "expected_domain": null,
+    "expected_intent": null,
+    "expected_escalation": true,
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "medium",
+    "tags": ["escalation", "complaint"]
+  },
+  {
+    "id": "pricing_question",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "How much does 2GB of MTN data cost?"
+    ],
+    "expected_domain": "DATA",
+    "expected_intent": "pricing",
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "easy",
+    "tags": ["data", "pricing"]
+  },
+  {
+    "id": "multi_service_context",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "I bought airtime yesterday",
+      "Now I need electricity token"
+    ],
+    "expected_domain": "POWER",
+    "expected_intent": "purchase",
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "medium",
+    "tags": ["power", "context-switch"]
+  },
+  {
+    "id": "greeting_only",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "Hello, good morning!"
+    ],
+    "expected_domain": null,
+    "expected_intent": null,
+    "expected_must_include": [],
+    "expected_must_not_include": ["error"],
+    "difficulty": "easy",
+    "tags": ["greeting", "basic"]
+  },
+  {
+    "id": "airtel_data_purchase",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "Buy 1.5GB Airtel data for 08031234567"
+    ],
+    "expected_domain": "DATA",
+    "expected_intent": "purchase",
+    "expected_route": "DataSalesAgent",
+    "expected_entities": {
+      "network": "Airtel",
+      "phone": "08031234567"
+    },
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "easy",
+    "tags": ["data", "purchase"]
+  },
+  {
+    "id": "refund_request",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "I paid for airtime but didn't receive it. I need a refund."
+    ],
+    "expected_domain": "AIRTIME",
+    "expected_intent": null,
+    "expected_escalation": true,
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "medium",
+    "tags": ["refund", "escalation"]
+  },
+  {
+    "id": "disco_availability",
+    "tenant_id": "legacy-ng-telecom",
+    "input_messages": [
+      "Which electricity distribution companies do you support?"
+    ],
+    "expected_domain": "POWER",
+    "expected_intent": "inquiry",
+    "expected_must_include": [],
+    "expected_must_not_include": [],
+    "difficulty": "easy",
+    "tags": ["power", "inquiry"]
+  }
+]
+

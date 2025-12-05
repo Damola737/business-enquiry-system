@@ -1,0 +1,33 @@
+{
+  "data_purchase_form": {
+    "name": "data_purchase_form",
+    "slots": [
+      {
+        "name": "network",
+        "type": "string",
+        "required": true,
+        "prompt": "Which network do you need data for? We support MTN, Glo, Airtel, and 9Mobile.",
+        "validation": "^(MTN|Glo|Airtel|9Mobile)$",
+        "examples": ["MTN", "Glo", "Airtel", "9Mobile"]
+      },
+      {
+        "name": "phone",
+        "type": "phone",
+        "required": true,
+        "prompt": "What phone number should receive the data?",
+        "validation": "^(\\+?234|0)[789]\\d{9}$",
+        "examples": ["08012345678", "+2348012345678"]
+      },
+      {
+        "name": "bundle",
+        "type": "string",
+        "required": true,
+        "prompt": "Which data bundle would you like? (e.g., 1GB, 2GB, 5GB)",
+        "validation": "^\\d+(\\.\\d+)?\\s?(GB|MB)$",
+        "examples": ["1GB", "2GB", "1.5GB", "500MB"]
+      }
+    ],
+    "submit_action": "build_cta",
+    "confirmation_required": true
+  }
+}

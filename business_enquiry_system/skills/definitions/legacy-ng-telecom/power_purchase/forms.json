@@ -1,0 +1,33 @@
+{
+  "power_purchase_form": {
+    "name": "power_purchase_form",
+    "slots": [
+      {
+        "name": "meter_number",
+        "type": "meter_number",
+        "required": true,
+        "prompt": "Please provide your prepaid meter number (11-13 digits).",
+        "validation": "^\\d{11,13}$",
+        "examples": ["12345678901", "1234567890123"]
+      },
+      {
+        "name": "disco",
+        "type": "string",
+        "required": true,
+        "prompt": "Which distribution company is your meter registered with? (e.g., IKEDC, EKEDC, AEDC)",
+        "validation": "^(IKEDC|EKEDC|AEDC|PHED|EEDC|KEDCO|BEDC|YEDC|JEDC|KAEDCO|IBEDC)$",
+        "examples": ["IKEDC", "EKEDC", "AEDC", "PHED"]
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": true,
+        "prompt": "How much electricity token would you like to purchase? (Minimum ₦500)",
+        "validation": "^[5-9]\\d{2}|[1-9]\\d{3,}$",
+        "examples": ["500", "1000", "5000", "10000"]
+      }
+    ],
+    "submit_action": "build_cta",
+    "confirmation_required": true
+  }
+}

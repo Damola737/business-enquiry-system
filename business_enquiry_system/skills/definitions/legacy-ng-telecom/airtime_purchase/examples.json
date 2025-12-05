@@ -1,0 +1,26 @@
+[
+  {
+    "input": "I want to buy 1000 naira MTN airtime for 08012345678",
+    "output": "Perfect! I'll help you purchase ₦1,000 MTN airtime for 08012345678.\n\n📱 **Transaction Summary**\n- Network: MTN\n- Phone: 08012345678\n- Amount: ₦1,000\n\n[Purchase Airtime](https://portal.example.com/airtime/mtn?phone=08012345678&amount=1000)\n\nClick the link above to complete your purchase. The airtime will be delivered instantly!",
+    "entities": {
+      "network": "MTN",
+      "phone": "08012345678",
+      "amount": "1000"
+    }
+  },
+  {
+    "input": "Recharge my Glo line with 500 naira",
+    "output": "I can help you with that! To purchase ₦500 Glo airtime, please provide the phone number to recharge.",
+    "entities": {
+      "network": "Glo",
+      "amount": "500"
+    },
+    "missing": ["phone"]
+  },
+  {
+    "input": "I need airtime",
+    "output": "I'd be happy to help you buy airtime! Which network would you like? We support:\n- MTN\n- Glo\n- Airtel\n- 9Mobile\n\nPlease also let me know the phone number and amount.",
+    "entities": {},
+    "missing": ["network", "phone", "amount"]
+  }
+]

@@ -120,6 +120,10 @@ class ConversationContext(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    # Tracing
+    run_id: Optional[str] = None
+    route: Optional[str] = None
+
     def add_step(self, agent_name: str, action: str, result: Any):
         """Add a processing step to the history."""
         self.processing_steps.append({

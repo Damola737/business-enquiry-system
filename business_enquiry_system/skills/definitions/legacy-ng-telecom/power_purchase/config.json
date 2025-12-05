@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "domains": ["POWER"],
+  "intents": ["purchase", "buy", "recharge", "token"],
+  "priority": 10
+}

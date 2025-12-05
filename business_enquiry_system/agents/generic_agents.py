@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional
 
 from agents.base_agent_v2 import BaseBusinessAgent, ConversationContext
 from config.tenant_config_store import TenantConfigStore
+from context_engine import CaseState, CaseStateStore, ContextPackBuilder, build_tenant_rules_text
 
 
 class ProductInquiryAgent(BaseBusinessAgent):
@@ -42,9 +43,38 @@ how the user can find more details on the company's website or catalog."""
         cfg = TenantConfigStore.get_instance().get_config(tenant_id or "legacy-ng-telecom")
         company = cfg.get("company_name", cfg.get("tenant_key", "this company"))
 
+        # Build context pack if conversation context is available
+        context_pack_block = ""
+        if context is not None:
+            conversation_id = getattr(context, "session_id", context.enquiry_id)
+            tenant_for_state = tenant_id or "legacy-ng-telecom"
+            store = CaseStateStore()
+            existing = store.load(tenant_for_state, conversation_id)
+            case_state = existing or CaseState(
+                tenant_id=tenant_for_state,
+                conversation_id=conversation_id,
+                enquiry_id=context.enquiry_id,
+            )
+
+            rules_text = build_tenant_rules_text(cfg)
+            builder = ContextPackBuilder(max_tokens_per_section=512)
+            pack = builder.build(
+                tenant_rules={"operating_rules": rules_text},
+                conversation=context,
+                case_state=case_state,
+                kb_summaries=None,
+            )
+
+            context_pack_block = (
+                "CONTEXT PACK\n"
+                "-------------\n"
+                f"TENANT OPERATING RULES:\n{pack['tenant_rules']}\n\n"
+                f"CONVERSATION SUMMARY:\n{pack['history_summary']}\n\n"
+            )
+
         # Best-effort LLM response; if LLM is disabled, a static string is returned.
         prompt = (
-            f"You are answering for tenant/company: {company}.\n\n"
+            f"{context_pack_block}You are answering for tenant/company: {company}.\n\n"
             f"User question:\n{message}\n\n"
             "Provide a concise answer about products or services. "
             "If you cannot know exact catalog details, say so and describe how "
@@ -86,8 +116,36 @@ tell the user what information is required (IDs, dates, amounts, etc.)."""
         cfg = TenantConfigStore.get_instance().get_config(tenant_id or "legacy-ng-telecom")
         company = cfg.get("company_name", cfg.get("tenant_key", "this company"))
 
+        context_pack_block = ""
+        if context is not None:
+            conversation_id = getattr(context, "session_id", context.enquiry_id)
+            tenant_for_state = tenant_id or "legacy-ng-telecom"
+            store = CaseStateStore()
+            existing = store.load(tenant_for_state, conversation_id)
+            case_state = existing or CaseState(
+                tenant_id=tenant_for_state,
+                conversation_id=conversation_id,
+                enquiry_id=context.enquiry_id,
+            )
+
+            rules_text = build_tenant_rules_text(cfg)
+            builder = ContextPackBuilder(max_tokens_per_section=512)
+            pack = builder.build(
+                tenant_rules={"operating_rules": rules_text},
+                conversation=context,
+                case_state=case_state,
+                kb_summaries=None,
+            )
+
+            context_pack_block = (
+                "CONTEXT PACK\n"
+                "-------------\n"
+                f"TENANT OPERATING RULES:\n{pack['tenant_rules']}\n\n"
+                f"CONVERSATION SUMMARY:\n{pack['history_summary']}\n\n"
+            )
+
         prompt = (
-            f"You are helping with a transaction for: {company}.\n\n"
+            f"{context_pack_block}You are helping with a transaction for: {company}.\n\n"
             f"User message:\n{message}\n\n"
             "Explain in clear steps what the user should do next "
             "(for example: check order status, provide an order ID, confirm payment details, etc.). "
@@ -128,8 +186,36 @@ Always suggest contacting a human expert or support channel for high-risk issues
         cfg = TenantConfigStore.get_instance().get_config(tenant_id or "legacy-ng-telecom")
         company = cfg.get("company_name", cfg.get("tenant_key", "this company"))
 
+        context_pack_block = ""
+        if context is not None:
+            conversation_id = getattr(context, "session_id", context.enquiry_id)
+            tenant_for_state = tenant_id or "legacy-ng-telecom"
+            store = CaseStateStore()
+            existing = store.load(tenant_for_state, conversation_id)
+            case_state = existing or CaseState(
+                tenant_id=tenant_for_state,
+                conversation_id=conversation_id,
+                enquiry_id=context.enquiry_id,
+            )
+
+            rules_text = build_tenant_rules_text(cfg)
+            builder = ContextPackBuilder(max_tokens_per_section=512)
+            pack = builder.build(
+                tenant_rules={"operating_rules": rules_text},
+                conversation=context,
+                case_state=case_state,
+                kb_summaries=None,
+            )
+
+            context_pack_block = (
+                "CONTEXT PACK\n"
+                "-------------\n"
+                f"TENANT OPERATING RULES:\n{pack['tenant_rules']}\n\n"
+                f"CONVERSATION SUMMARY:\n{pack['history_summary']}\n\n"
+            )
+
         prompt = (
-            f"You are troubleshooting for: {company}.\n\n"
+            f"{context_pack_block}You are troubleshooting for: {company}.\n\n"
             f"User message:\n{message}\n\n"
             "1) Help the user clarify the problem.\n"
             "2) Suggest safe, generic next steps.\n"
@@ -141,4 +227,3 @@ Always suggest contacting a human expert or support channel for high-risk issues
             "action": "troubleshooting",
             "response": reply,
         }
-

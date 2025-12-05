@@ -1,0 +1,33 @@
+{
+  "airtime_purchase_form": {
+    "name": "airtime_purchase_form",
+    "slots": [
+      {
+        "name": "network",
+        "type": "string",
+        "required": true,
+        "prompt": "Which network would you like? We support MTN, Glo, Airtel, and 9Mobile.",
+        "validation": "^(MTN|Glo|Airtel|9Mobile)$",
+        "examples": ["MTN", "Glo", "Airtel", "9Mobile"]
+      },
+      {
+        "name": "phone",
+        "type": "phone",
+        "required": true,
+        "prompt": "Please provide the phone number to recharge.",
+        "validation": "^(\\+?234|0)[789]\\d{9}$",
+        "examples": ["08012345678", "+2348012345678", "07031234567"]
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": true,
+        "prompt": "How much airtime would you like? Minimum is ₦50.",
+        "validation": "^[1-9]\\d*$",
+        "examples": ["100", "500", "1000", "2000"]
+      }
+    ],
+    "submit_action": "build_cta",
+    "confirmation_required": true
+  }
+}

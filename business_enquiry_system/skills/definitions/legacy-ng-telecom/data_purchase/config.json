@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "domains": ["DATA"],
+  "intents": ["purchase", "buy", "subscribe"],
+  "priority": 10
+}

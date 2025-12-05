@@ -8,7 +8,7 @@ import os
 import sys
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 try:
     from dotenv import load_dotenv
 except Exception:
@@ -28,6 +28,14 @@ from agents.generic_agents import (
 )
 from agents.research_agent import ResearchAgent
 from agents.escalation_formatter import build_escalation_summary
+from config.tenant_config_store import TenantConfigStore
+from observability.run_metadata import (
+    PromptBundle,
+    RunMetadata,
+    compute_tenant_config_version,
+    compute_toolset_version,
+)
+from observability.trace_store import TraceStore
 
 
 class SimpleCustomerServicePipeline:
@@ -63,6 +71,10 @@ class SimpleCustomerServicePipeline:
         self.transaction_agent = TransactionGuidanceAgent(self.llm_config)
         self.troubleshooting_agent = TroubleshootingAgent(self.llm_config)
         self.research_agent = ResearchAgent(self.llm_config, knowledge_base_path="./knowledge_base")
+
+        # Observability and tenant configuration
+        self.trace_store = TraceStore()
+        self.tenant_config_store = TenantConfigStore.get_instance()
 
         print("✅ Pipeline ready")
 
@@ -103,18 +115,79 @@ class SimpleCustomerServicePipeline:
             updated_at=start_time
         )
 
+        # Compute artifact versions for this run
+        tenant_config = self.tenant_config_store.get_config(tenant_id)
+        config_version = compute_tenant_config_version(tenant_config)
+        toolset_version = compute_toolset_version({})
+
+        classifier_bundle = PromptBundle(
+            name="classifier_v2",
+            version="1.0.0",
+            template_id="classifier_v2.main",
+            extras={"tenant_key": tenant_id},
+        )
+
+        run_metadata = RunMetadata(
+            tenant_id=tenant_id,
+            conversation_id=context.session_id,
+            model_id=self.llm_config["config_list"][0].get("model", "unknown-model"),
+            prompt_bundle_hash=classifier_bundle.hash,
+            config_version=config_version,
+            toolset_version=toolset_version,
+        )
+
+        run_id = self.trace_store.start_run(
+            metadata=run_metadata,
+            route="simple_customer_service_pipeline",
+        )
+        context.run_id = run_id
+
         # Step 1: Classification
         self._print_step(1, "Classifying message")
+        classification_started = datetime.utcnow()
         classification_response = self.classifier.process_message(customer_message, context)
+        classification_finished = datetime.utcnow()
 
         if not classification_response.success:
-            return self._error_response(
+            self.trace_store.append_span(
+                run_id=run_id,
+                name="classification",
+                metadata={
+                    "success": False,
+                    "error": classification_response.error,
+                },
+                error=classification_response.error,
+                start_time=classification_started,
+                end_time=classification_finished,
+            )
+            error_result = self._error_response(
                 context,
                 "Classification failed",
-                classification_response.error
+                classification_response.error,
             )
+            self.trace_store.finish_run(
+                run_id=run_id,
+                status="error",
+                summary={
+                    "stage": "classification",
+                    "error": classification_response.error,
+                    "enquiry_id": context.enquiry_id,
+                },
+            )
+            return error_result
 
         classification = classification_response.result["classification"]
+
+        self.trace_store.append_span(
+            run_id=run_id,
+            name="classification",
+            metadata={
+                "success": True,
+                "classification": classification,
+            },
+            start_time=classification_started,
+            end_time=classification_finished,
+        )
 
         print(f"   Domain: {classification['service_domain']}")
         print(f"   Intent: {classification['intent']}")
@@ -126,6 +199,7 @@ class SimpleCustomerServicePipeline:
         # Optional: KB research (for richer answers)
         research_block = ""
         try:
+            retrieval_started = datetime.utcnow()
             research_resp = self.research_agent.process_message(
                 customer_message,
                 {
@@ -133,15 +207,35 @@ class SimpleCustomerServicePipeline:
                     "tenant_id": tenant_id,
                 },
             )
+            retrieval_finished = datetime.utcnow()
+            top_results: Optional[Any] = None
             if research_resp and research_resp.get("success"):
                 res = research_resp.get("result", {})
                 results = res.get("results", [])
                 if results:
                     top = results[:3]
+                    top_results = [
+                        {"doc_id": r.get("doc_id"), "title": r.get("title")} for r in top
+                    ]
                     bullets = "\n".join(f"• {r.get('title','Doc')}" for r in top)
                     research_block = f"\n\nHelpful Resources:\n{bullets}"
-        except Exception:
-            pass
+            self.trace_store.append_span(
+                run_id=run_id,
+                name="retrieval",
+                metadata={
+                    "success": bool(research_resp and research_resp.get("success")),
+                    "top_results": top_results or [],
+                },
+                start_time=retrieval_started,
+                end_time=retrieval_finished,
+            )
+        except Exception as exc:  # noqa: F841
+            self.trace_store.append_span(
+                run_id=run_id,
+                name="retrieval",
+                metadata={"success": False},
+                error=str(exc),
+            )
 
         # Step 2: Route to specialist
         self._print_step(2, "Routing to specialist agent")
@@ -215,6 +309,18 @@ class SimpleCustomerServicePipeline:
         print(f"Processing time: {int(processing_time)}ms")
         print(f"Agents involved: {', '.join(context.agents_involved)}")
         print(f"Status: {result['status'].upper()}")
+
+        # Finalize trace
+        self.trace_store.finish_run(
+            run_id=context.run_id or "",
+            status=result["status"],
+            summary={
+                "enquiry_id": context.enquiry_id,
+                "processing_time_ms": int(processing_time),
+                "domain": classification["service_domain"],
+                "intent": classification["intent"],
+            },
+        )
 
         return result
 

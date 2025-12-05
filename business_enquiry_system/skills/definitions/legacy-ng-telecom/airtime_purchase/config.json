@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "domains": ["AIRTIME"],
+  "intents": ["purchase", "buy", "recharge"],
+  "priority": 10
+}

@@ -1,12 +1,18 @@
 # agents/response_generator.py
 """
 Response Generator Agent Module
-Compiles and formats final responses for customers
+Compiles and formats final responses for customers.
+
+Extended to leverage the shared Context Engine so that
+final responses are conditioned on a compact, deterministic
+context pack (tenant rules + conversation summary + KB hints).
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 from datetime import datetime
 from agents.base_agent import BaseBusinessAgent
+from agents.base_agent_v2 import ConversationContext
+from context_engine import CaseState, CaseStateStore, ContextPackBuilder, build_tenant_rules_text
 import re
 
 
@@ -134,12 +140,37 @@ We appreciate your patience and are committed to resolving this matter promptly.
         tone_profile = self._select_tone_profile(enquiry, customer_info)
         template = self.response_templates.get(response_type, self.response_templates["standard"])
 
+        # Build context pack (internal, not shown directly to user)
+        context_pack_text = self._build_context_pack(enquiry, agent_inputs, customer_info)
+
         content = self._compile_content(agent_inputs, enquiry)
         if customer_info and customer_info.get("name"):
             content["greeting"] = f"Hello {customer_info['name']}"
         content = self._apply_tone(content, tone_profile)
 
         final = self._format_response(template, content)
+
+        # Optional LLM polish step using the context pack as guidance.
+        if context_pack_text:
+            try:
+                prompt = (
+                    f"{self.SYSTEM_MESSAGE}\n\n"
+                    f"{context_pack_text}\n\n"
+                    "DRAFT RESPONSE:\n"
+                    "---------------\n"
+                    f"{final}\n\n"
+                    "TASK:\n"
+                    "- Rewrite this draft into a single, polished customer-facing response.\n"
+                    "- Preserve all factual content and key next steps.\n"
+                    "- Keep it concise, professional, and easy to read.\n"
+                    "- Return only the final message text, with no extra commentary."
+                )
+                rewritten = self.get_llm_response(prompt)
+                if rewritten and isinstance(rewritten, str):
+                    final = rewritten.strip()
+            except Exception as e:
+                self.logger.warning(f"ResponseGenerator LLM rewrite failed, using template response. Error: {e}")
+
         data = {
             "response": final,
             "type": response_type,
@@ -169,6 +200,96 @@ We appreciate your patience and are committed to resolving this matter promptly.
         if s in ["negative", "very negative"]: return "apology"
         c = enquiry.get("category", "").upper()
         return "technical" if c == "TECHNICAL" else ("sales" if c == "SALES" else "standard")
+
+    def _build_context_pack(
+        self,
+        enquiry: Dict[str, Any],
+        agent_inputs: Dict[str, Any],
+        customer_info: Dict[str, Any] = None,
+    ) -> str:
+        """
+        Build a compact context pack string using the shared Context Engine.
+
+        This is for LLM guidance only; it is not rendered directly to the user.
+        """
+        try:
+            tenant_id = "techcorp-default"
+            enquiry_id = enquiry.get("id") or enquiry.get("enquiry_id") or "ENQ-UNKNOWN"
+            session_id = enquiry_id
+
+            # Minimal synthetic ConversationContext from classification + customer_info
+            ctx = ConversationContext(
+                tenant_id=tenant_id,
+                enquiry_id=enquiry_id,
+                session_id=session_id,
+                customer_phone=(customer_info or {}).get("phone", "") if customer_info else "",
+                customer_email=(customer_info or {}).get("email"),
+                customer_name=(customer_info or {}).get("name"),
+            )
+            ctx.service_domain = enquiry.get("category")
+            ctx.intent = enquiry.get("intent")
+            ctx.priority = enquiry.get("priority", "MEDIUM")
+            sentiment = enquiry.get("sentiment", "neutral")
+            ctx.sentiment = sentiment.upper() if isinstance(sentiment, str) else "NEUTRAL"
+
+            # Case state (kept minimal, but persisted for future turns)
+            store = CaseStateStore()
+            existing = store.load(tenant_id, session_id)
+            state = existing or CaseState(
+                tenant_id=tenant_id,
+                conversation_id=session_id,
+                enquiry_id=enquiry_id,
+            )
+            state.workflow_step = "response_generation"
+            state.slots.update(
+                {
+                    "category": enquiry.get("category"),
+                    "intent": enquiry.get("intent"),
+                    "priority": enquiry.get("priority"),
+                    "sentiment": sentiment,
+                }
+            )
+
+            # Compact KB summaries from research agent (if any)
+            kb_summaries: List[str] = []
+            research = agent_inputs.get("research_agent")
+            if isinstance(research, dict):
+                findings = research.get("findings") or {}
+                summary = findings.get("summary")
+                if isinstance(summary, str) and summary.strip():
+                    kb_summaries.append(summary.strip())
+
+            # Tenant operating rules (aligned with TechCorp branding)
+            tenant_cfg = {
+                "branding": {
+                    "tone": "professional",
+                    "greeting": "Thank you for contacting TechCorp Solutions.",
+                    "closing": "Thank you for choosing TechCorp Solutions.",
+                }
+            }
+            rules_text = build_tenant_rules_text(tenant_cfg)
+
+            builder = ContextPackBuilder(max_tokens_per_section=512)
+            pack = builder.build(
+                tenant_rules={"operating_rules": rules_text},
+                conversation=ctx,
+                case_state=state,
+                kb_summaries=kb_summaries or None,
+            )
+
+            # Persist updated case state for observability / future turns
+            store.save(state)
+
+            return (
+                "CONTEXT PACK\n"
+                "-------------\n"
+                f"TENANT OPERATING RULES:\n{pack['tenant_rules']}\n\n"
+                f"CONVERSATION SUMMARY:\n{pack['history_summary']}\n\n"
+                f"KB CONTEXT:\n{pack['kb_context']}\n"
+            ).strip()
+        except Exception as e:
+            self.logger.warning(f"Failed to build context pack for response generation: {e}")
+            return ""
 
     def _compile_content(self, agent_inputs: Dict[str, Any], enquiry: Dict[str, Any]) -> Dict[str, str]:
         content = {
